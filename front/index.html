@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Add a champ</h2>
+    <form onsubmit="event.preventDefault(); sendChampion()">
+        <label for="name">Name</label>
+        <input type="text" name="name">
+        <label for="type">Type</label>
+        <input type="text" name="type">
+        <button type="submit">Send</button>
+    </form>
+    <h1>Agent's list</h1>
+    <button onclick="importChampion()" >Import champs</button>
+    <button onclick="deleteChampions()" >Delete all</button>
+    <div id="champions"></div>
+
+
+
+    <script>
+        fetch('http://localhost:3000/champions')
+            .then(response => response.json())
+            .then(data => {
+                let agents = document.querySelector('#champions')
+                data.forEach(champion => {
+                    agents.innerHTML += `
+                        <h2>${champion.name}</h2>
+                        <p>Type : ${champion.type}</p>
+                        <button><a href='champion.html?id=${champion.id}'>See more</a></button>
+                        <hr/>
+                    `
+                })
+            })
+
+        const sendChampion = async () => {
+                event.preventDefault()
+                let name = document.querySelector('input[name="name"]').value 
+                let type = document.querySelector('input[name="type"]').value 
+
+                await fetch('http://localhost:3000/champions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({name: name, type: type})
+                })
+
+                window.location.href = 'index.html'
+            }
+            
+        const importChampion = () => {
+            fetch('http://localhost:3000/champions/import', {
+                method: 'POST',
+            })
+            .then(response => {
+                if (response) {
+                    return response.json();
+                } else {
+                    throw new Error('Erreur lors de l\'importation du fichier JSON');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
+            window.location.href = 'index.html'
+        }
+
+        const deleteChampions = async () => {
+            await fetch(`http://localhost:3000/champions`, {
+                method: 'DELETE'
+            })
+            window.location.href = 'index.html'
+        }
+     
+    </script>
+</body>
+</html>
